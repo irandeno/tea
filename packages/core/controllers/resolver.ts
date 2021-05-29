@@ -1,4 +1,4 @@
-import { TelegramAdapter } from "../adapters/mod.ts";
+import { Context, Handler, TelegramAdapter } from "../adapters/mod.ts";
 import { Container } from "../injector/mod.ts";
 import parse from "./response-parser.ts";
 import { paramFactory } from "./param-factory.ts";
@@ -46,13 +46,13 @@ export class ControllerResolver {
   private createMiddleware(
     callback: (...args: any) => any,
     instance: anyObject,
-  ) {
-    return (ctx: any) => {
+  ): Handler {
+    return (context: Context) => {
       const paramMetadata =
         Reflect.getMetadata("params", instance, callback.name) || [];
-      const paramArgs = paramFactory(paramMetadata, ctx);
+      const paramArgs = paramFactory(paramMetadata, context);
       const message = parse(callback.call(instance, ...paramArgs));
-      this.adapter.reply(message, ctx);
+      this.adapter.reply(message, context);
     };
   }
 }
