@@ -7,7 +7,8 @@ export abstract class TelegramAdapter {
   }
   public abstract hears(trigger: string | RegExp, handler: Handler): void;
   public abstract start(): void;
-  public abstract reply(message: string, context: Context): void;
+  public abstract reply(message: string, context: Context, extra?: any): void;
+  public abstract createKeyboard(...keyboard: any): any;
   private validateToken(token: string) {
     const validRegex = /\d+:.*/;
     if (!validRegex.test(token)) throw new Error("invalid token");

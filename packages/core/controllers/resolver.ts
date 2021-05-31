@@ -59,8 +59,16 @@ export class ControllerResolver {
         callback.name,
       ) || [];
       const paramArgs = paramFactory(paramsMetadata, context);
-      const message = parse(callback.call(instance, ...paramArgs));
-      this.adapter.reply(message, context);
+      const response = parse(
+        callback.call(instance, ...paramArgs),
+        this.adapter,
+      );
+      if (typeof response === "string") {
+        this.adapter.reply(response, context);
+      } else if (Array.isArray(response)) {
+        const [message, extra] = response;
+        this.adapter.reply(message, context, extra);
+      }
     };
   }
 }
