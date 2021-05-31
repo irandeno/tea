@@ -12,6 +12,7 @@ export class ControllerResolver {
     const modules = this.container.getModules();
     modules.forEach((module) => {
       const controllers = module.getControllers();
+
       controllers.forEach(({ instance }) => {
         const instancePrototype = Object.getPrototypeOf(instance);
         const methodNames = Object.getOwnPropertyNames(
@@ -31,9 +32,12 @@ export class ControllerResolver {
       const method = instancePrototype[methodName];
       const listeners = Reflect.getMetadataKeys(method);
       listeners.forEach((listenerType) => {
-        const trigger = Reflect.getMetadata<string>(listenerType, method);
+        const trigger = Reflect.getMetadata<string | RegExp>(
+          listenerType,
+          method,
+        );
         const callback = method;
-        if (typeof trigger === "string") {
+        if (typeof trigger === "string" || trigger instanceof RegExp) {
           this.adapter.hears(
             trigger,
             this.createMiddleware(callback, instance),

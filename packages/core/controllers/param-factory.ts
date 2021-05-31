@@ -10,6 +10,11 @@ export function paramFactory(paramMetadata: any, context: any) {
           return context.msg;
         case ParamType.FROM:
           return context.from;
+        case ParamType.PARAM:
+          if (typeof param.data === "undefined") {
+            return context.match.groups;
+          }
+          return context.match.groups[param.data];
       }
     });
 }

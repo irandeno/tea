@@ -40,3 +40,6 @@ export const From: () => ParameterDecorator = createParamDecorator(
 export const Context: () => ParameterDecorator = createParamDecorator(
   ParamType.CONTEXT,
 );
+
+export const Param: (data?: string) => ParameterDecorator =
+  createParamDecorator(ParamType.PARAM);

@@ -1,5 +1,6 @@
 export enum ParamType {
-  MESSAGE,
-  FROM,
   CONTEXT,
+  FROM,
+  MESSAGE,
+  PARAM,
 }

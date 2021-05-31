@@ -5,7 +5,7 @@ export abstract class TelegramAdapter {
   constructor(token: string) {
     this.validateToken(token);
   }
-  public abstract hears(trigger: string, handler: Handler): void;
+  public abstract hears(trigger: string | RegExp, handler: Handler): void;
   public abstract start(): void;
   public abstract reply(message: string, context: Context): void;
   private validateToken(token: string) {
