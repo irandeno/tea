@@ -1,7 +1,8 @@
 import { Context, Handler, TelegramAdapter } from "../adapters/mod.ts";
 import { Container } from "../injector/mod.ts";
-import parse from "./response-parser.ts";
+import { ParamMetadata } from "../../common/interfaces/mod.ts";
 import { paramFactory } from "./param-factory.ts";
+import parse from "./response-parser.ts";
 
 type anyObject = Record<string, any>;
 
@@ -52,9 +53,12 @@ export class ControllerResolver {
     instance: anyObject,
   ): Handler {
     return (context: Context) => {
-      const paramMetadata =
-        Reflect.getMetadata("params", instance, callback.name) || [];
-      const paramArgs = paramFactory(paramMetadata, context);
+      const paramsMetadata = Reflect.getMetadata<ParamMetadata[]>(
+        "params",
+        instance,
+        callback.name,
+      ) || [];
+      const paramArgs = paramFactory(paramsMetadata, context);
       const message = parse(callback.call(instance, ...paramArgs));
       this.adapter.reply(message, context);
     };

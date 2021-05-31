@@ -1,4 +1,4 @@
-export type Context = Record<string, unknown>;
+export type Context = Record<string, any>;
 export type Handler = (context: Context) => void;
 
 export abstract class TelegramAdapter {

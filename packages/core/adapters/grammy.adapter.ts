@@ -9,7 +9,7 @@ export class GrammyAdapter extends TelegramAdapter {
     this.adapter = new Bot(token);
   }
 
-  hears(trigger: string, ctx: any) {
+  hears(trigger: string | RegExp, ctx: any) {
     this.adapter.hears(trigger, ctx);
   }
 
