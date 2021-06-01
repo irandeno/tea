@@ -1,4 +1,5 @@
 import {
+  Command,
   Controller,
   Hears,
   Param,
@@ -9,6 +10,13 @@ import { MoviesService } from "./movies.service.ts";
 @Controller({ updateTypes: [UpdateType.MESSAGE] })
 export class MoviesController {
   constructor(private moviesService: MoviesService) {}
+
+  @Command("all")
+  getAll() {
+    const movies = this.moviesService.getAll();
+    const keyboard = this.moviesService.generateKeyboard(movies);
+    return { message: "movies list : ", keyboard };
+  }
 
   @Hears("{movie:string}")
   search(@Param("movie") movie: string) {

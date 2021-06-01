@@ -25,6 +25,10 @@ export class GrammyAdapter extends TelegramAdapter {
     this.adapter.hears(trigger, ctx);
   }
 
+  command(trigger: string, ctx: any) {
+    this.adapter.command(trigger, ctx);
+  }
+
   start() {
     this.adapter.start({
       allowed_updates: this.updateTypes.size

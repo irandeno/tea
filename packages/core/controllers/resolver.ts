@@ -2,7 +2,6 @@ import { Context, Handler, TelegramAdapter } from "../adapters/mod.ts";
 import { Container } from "../injector/mod.ts";
 import { ParamMetadata, UpdateType } from "../../common/mod.ts";
 import { paramFactory } from "./param-factory.ts";
-
 import parse from "./response-parser.ts";
 
 type anyObject = Record<string, any>;
@@ -24,7 +23,6 @@ export class ControllerResolver {
           Reflect.getMetadata<UpdateType[]>("updateTypes", controllerType) ||
           [];
         this.adapter.addUpdateTypes(updateTypes);
-
         this.bindListenersToAdapter(methodNames, instancePrototype, instance);
       });
     });
@@ -43,18 +41,45 @@ export class ControllerResolver {
           listenerType,
           method,
         );
-        const callback = method;
-        if (typeof trigger === "string" || trigger instanceof RegExp) {
-          this.adapter.hears(
-            trigger,
-            this.createMiddleware(callback, instance),
-          );
+        if (typeof trigger === "undefined") {
+          return;
         }
+        this.createListener(listenerType, trigger, method, instance);
       });
     });
   }
 
-  private createMiddleware(
+  private createListener(
+    listenerType: string | symbol,
+    trigger: string | RegExp,
+    method: any,
+    instance: anyObject,
+  ) {
+    switch (listenerType) {
+      case "hears":
+        return this.adapter.hears(
+          trigger,
+          this.createHandler(method, instance),
+        );
+      case "command":
+        if (trigger instanceof RegExp) {
+          return this.adapter.hears(
+            trigger,
+            this.createHandler(method, instance),
+          );
+        }
+        return this.adapter.command(
+          trigger,
+          this.createHandler(method, instance),
+        );
+      default:
+        throw new Error(
+          `unrecognized listener type : "${listenerType.toString()}"`,
+        );
+    }
+  }
+
+  private createHandler(
     callback: (...args: any) => any,
     instance: anyObject,
   ): Handler {

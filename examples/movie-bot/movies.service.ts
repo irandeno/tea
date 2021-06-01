@@ -18,9 +18,14 @@ const movies: Movie[] = [
 
 @Injectable()
 export class MoviesService {
+  getAll() {
+    return movies;
+  }
+
   search(query: string) {
     return movies.filter(({ name }) => name.includes(query));
   }
+
   generateKeyboard(movies: Movie[]) {
     return movies.map(({ name }) => ({ text: name, data: name }));
   }
