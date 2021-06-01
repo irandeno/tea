@@ -41,7 +41,7 @@ export class GrammyAdapter extends TelegramAdapter {
     });
   }
 
-  reply(message: string, ctx: any, extra?: any) {
+  reply(message: string, ctx: Grammy.Context, extra?: any) {
     ctx.reply(message, extra);
   }
 

@@ -2,8 +2,8 @@ import { Context, Handler, TelegramAdapter } from "../adapters/mod.ts";
 import { Container } from "../injector/mod.ts";
 import { ParamMetadata, UpdateType } from "../../common/mod.ts";
 import { paramFactory } from "./param-factory.ts";
-import * as constants from "../../common/constants.ts";
 import parse from "./response-parser.ts";
+import * as constants from "../../common/constants.ts";
 
 type anyObject = Record<string, any>;
 
@@ -99,6 +99,7 @@ export class ControllerResolver {
       const response = parse(
         callback.call(instance, ...paramArgs),
         this.adapter,
+        context,
       );
       if (typeof response === "string") {
         this.adapter.reply(response, context);

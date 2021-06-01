@@ -1,8 +1,9 @@
-import { TelegramAdapter } from "../adapters/telegram.abstract.ts";
+import { Context, TelegramAdapter } from "../adapters/telegram.abstract.ts";
 
 export default function parse(
   response: any,
   adapter: TelegramAdapter,
+  context: Context,
 ): string | [string, any] {
   if (typeof response === "undefined") {
     throw new Error();
@@ -14,10 +15,14 @@ export default function parse(
     if (response.message === "" || typeof response.message === "undefined") {
       throw new Error("no message provided");
     }
-    let keyboard = haveKeyboard(response)
-      ? { reply_markup: adapter.createKeyboard(response.keyboard) }
-      : [];
-    return [response.message, keyboard];
+    let extra: any = {};
+    extra.reply_markup = haveKeyboard(response)
+      ? adapter.createKeyboard(response.keyboard)
+      : undefined;
+    extra.reply_to_message_id = isReply(response)
+      ? response.reply === true ? context.message.message_id : response.reply
+      : undefined;
+    return [response.message, extra];
   }
   return "not-implemented-yet";
 }
@@ -26,3 +31,8 @@ const haveKeyboard = (response: any) =>
   typeof response.keyboard !== undefined &&
   Array.isArray(response.keyboard) &&
   response.keyboard.length;
+
+const isReply = (response: any) =>
+  typeof response.reply !== undefined &&
+  ((typeof response.reply === "boolean" && response.reply === true) ||
+    typeof response.reply === "number");

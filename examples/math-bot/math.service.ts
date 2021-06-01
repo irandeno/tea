@@ -5,4 +5,8 @@ export class MathService {
   sum(first: number, second: number) {
     return first + second;
   }
+
+  multiply(first: number, second: number) {
+    return first * second;
+  }
 }
