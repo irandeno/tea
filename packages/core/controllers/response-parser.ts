@@ -1,10 +1,15 @@
 import { Context, TelegramAdapter } from "../adapters/telegram.abstract.ts";
 
+export interface Extra {
+  reply_markup?: any;
+  reply_to_message_id?: number;
+}
+
 export default function parse(
   response: any,
   adapter: TelegramAdapter,
   context: Context,
-): string | [string, any] {
+): string | [string, Extra] {
   if (typeof response === "undefined") {
     throw new Error();
   } else if (typeof response === "string" || typeof response == "number") {
@@ -15,10 +20,12 @@ export default function parse(
     if (response.message === "" || typeof response.message === "undefined") {
       throw new Error("no message provided");
     }
-    let extra: any = {};
+    let extra: Extra = {};
+
     extra.reply_markup = haveKeyboard(response)
       ? adapter.createKeyboard(response.keyboard)
       : undefined;
+
     extra.reply_to_message_id = isReply(response)
       ? response.reply === true ? context.message.message_id : response.reply
       : undefined;

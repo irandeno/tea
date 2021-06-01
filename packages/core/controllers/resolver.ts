@@ -1,31 +1,34 @@
-import { Context, Handler, TelegramAdapter } from "../adapters/mod.ts";
+import { TelegramAdapter } from "../adapters/mod.ts";
 import { Container } from "../injector/mod.ts";
-import { ParamMetadata, UpdateType } from "../../common/mod.ts";
-import { paramFactory } from "./param-factory.ts";
-import parse from "./response-parser.ts";
-import * as constants from "../../common/constants.ts";
+import { UpdateType } from "../../common/mod.ts";
+import { ListenerBuilder } from "./listener-builder.ts";
 
-type anyObject = Record<string, any>;
+export type anyObject = Record<string, any>;
 
 export class ControllerResolver {
-  constructor(private container: Container, private adapter: TelegramAdapter) {}
+  private listenerBuilder: ListenerBuilder;
+  constructor(private container: Container, private adapter: TelegramAdapter) {
+    this.listenerBuilder = new ListenerBuilder(this.adapter);
+  }
 
   public resolve() {
     const modules = this.container.getModules();
     modules.forEach((module) => {
-      const controllers = module.getControllers();
+      this.setupControllers(module.getControllers());
+    });
+  }
 
-      controllers.forEach(({ instance }, controllerType) => {
-        const instancePrototype = Object.getPrototypeOf(instance);
-        const methodNames = Object.getOwnPropertyNames(
-          instancePrototype,
-        ).filter((method) => method !== "constructor");
-        const updateTypes =
-          Reflect.getMetadata<UpdateType[]>("updateTypes", controllerType) ||
-          [];
-        this.adapter.addUpdateTypes(updateTypes);
-        this.bindListenersToAdapter(methodNames, instancePrototype, instance);
-      });
+  private setupControllers(controllers: Map<any, any>) {
+    controllers.forEach(({ instance }, controllerType) => {
+      const updateTypes =
+        Reflect.getMetadata<UpdateType[]>("updateTypes", controllerType) || [];
+      this.adapter.addUpdateTypes(updateTypes);
+
+      const instancePrototype = Object.getPrototypeOf(instance);
+      const methodNames = Object.getOwnPropertyNames(instancePrototype).filter(
+        (method) => method !== "constructor",
+      );
+      this.bindListenersToAdapter(methodNames, instancePrototype, instance);
     });
   }
 
@@ -45,68 +48,8 @@ export class ControllerResolver {
         if (typeof trigger === "undefined") {
           return;
         }
-        this.createListener(listenerType, trigger, method, instance);
+        this.listenerBuilder.build(listenerType, trigger, method, instance);
       });
     });
-  }
-
-  private createListener(
-    listenerType: string | symbol,
-    trigger: string | RegExp,
-    method: any,
-    instance: anyObject,
-  ) {
-    switch (listenerType) {
-      case constants.HEARS_METADATA:
-        return this.adapter.hears(
-          trigger,
-          this.createHandler(method, instance),
-        );
-      case constants.COMMAND_METADATA:
-        if (trigger instanceof RegExp) {
-          return this.adapter.hears(
-            trigger,
-            this.createHandler(method, instance),
-          );
-        }
-        return this.adapter.command(
-          trigger,
-          this.createHandler(method, instance),
-        );
-      case constants.CALLBACK_QUERY_METADATA:
-        return this.adapter.callbackQuery(
-          trigger,
-          this.createHandler(method, instance),
-        );
-      default:
-        throw new Error(
-          `unrecognized listener type : "${listenerType.toString()}"`,
-        );
-    }
-  }
-
-  private createHandler(
-    callback: (...args: any) => any,
-    instance: anyObject,
-  ): Handler {
-    return (context: Context) => {
-      const paramsMetadata = Reflect.getMetadata<ParamMetadata[]>(
-        "params",
-        instance,
-        callback.name,
-      ) || [];
-      const paramArgs = paramFactory(paramsMetadata, context);
-      const response = parse(
-        callback.call(instance, ...paramArgs),
-        this.adapter,
-        context,
-      );
-      if (typeof response === "string") {
-        this.adapter.reply(response, context);
-      } else if (Array.isArray(response)) {
-        const [message, extra] = response;
-        this.adapter.reply(message, context, extra);
-      }
-    };
   }
 }
