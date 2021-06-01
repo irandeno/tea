@@ -1,5 +1,5 @@
 import { ModuleMetadata } from "../../interfaces/modules/module-metadata.interface.ts";
-import { MODULE_METADATA as moduleMetadata } from "../constants.ts";
+import { MODULE_METADATA as moduleMetadata } from "../../constants.ts";
 import { InvalidModuleConfigException } from "./exceptions/invalid-module-config.exception.ts";
 const validMetadata = [moduleMetadata.IMPORTS, moduleMetadata.CONTROLLERS];
 

@@ -1,7 +1,8 @@
 import { Context, Handler, TelegramAdapter } from "../adapters/mod.ts";
 import { Container } from "../injector/mod.ts";
-import { ParamMetadata } from "../../common/interfaces/mod.ts";
+import { ParamMetadata, UpdateType } from "../../common/mod.ts";
 import { paramFactory } from "./param-factory.ts";
+
 import parse from "./response-parser.ts";
 
 type anyObject = Record<string, any>;
@@ -14,11 +15,16 @@ export class ControllerResolver {
     modules.forEach((module) => {
       const controllers = module.getControllers();
 
-      controllers.forEach(({ instance }) => {
+      controllers.forEach(({ instance }, controllerType) => {
         const instancePrototype = Object.getPrototypeOf(instance);
         const methodNames = Object.getOwnPropertyNames(
           instancePrototype,
         ).filter((method) => method !== "constructor");
+        const updateTypes =
+          Reflect.getMetadata<UpdateType[]>("updateTypes", controllerType) ||
+          [];
+        this.adapter.addUpdateTypes(updateTypes);
+
         this.bindListenersToAdapter(methodNames, instancePrototype, instance);
       });
     });

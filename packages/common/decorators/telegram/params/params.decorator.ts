@@ -1,4 +1,4 @@
-import { PARAMS_METADATA } from "../../constants.ts";
+import { PARAMS_METADATA } from "../../../constants.ts";
 import { ParamType } from "../../../enums/param-type.enum.ts";
 import { ParamMetadata } from "../../../interfaces/mod.ts";
 

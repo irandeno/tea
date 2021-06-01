@@ -1,5 +1,6 @@
 import * as Grammy from "https://deno.land/x/grammy@v1.1.4/mod.ts";
 import { TelegramAdapter } from "./mod.ts";
+import { UpdateType } from "../../common/mod.ts";
 
 type OrdinaryKeyboardType = string[];
 
@@ -13,6 +14,7 @@ type InlineKeyboardType = Array<Key>;
 
 export class GrammyAdapter extends TelegramAdapter {
   private adapter: Grammy.Bot;
+  private updateTypes: Set<UpdateType> = new Set();
   constructor(token: string) {
     super(token);
     const { Bot } = Grammy;
@@ -24,7 +26,11 @@ export class GrammyAdapter extends TelegramAdapter {
   }
 
   start() {
-    this.adapter.start();
+    this.adapter.start({
+      allowed_updates: this.updateTypes.size
+        ? Array.from(this.updateTypes)
+        : undefined,
+    });
   }
 
   reply(message: string, ctx: any, extra?: any) {
@@ -68,5 +74,9 @@ export class GrammyAdapter extends TelegramAdapter {
     );
     if (isOrdinaryKeyboard) return true;
     return false;
+  }
+
+  public addUpdateTypes(updateTypes: UpdateType[]) {
+    updateTypes.forEach((updateType) => this.updateTypes.add(updateType));
   }
 }

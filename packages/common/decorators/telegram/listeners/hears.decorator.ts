@@ -1,5 +1,4 @@
-import { HEARS_METADATA } from "../../constants.ts";
-
+import { HEARS_METADATA } from "../../../constants.ts";
 import { parse } from "../../../../deps.ts";
 
 export function Hears(pattern: string): MethodDecorator {

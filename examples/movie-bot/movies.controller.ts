@@ -1,7 +1,12 @@
-import { Controller, Hears, Param } from "../../packages/common/mod.ts";
+import {
+  Controller,
+  Hears,
+  Param,
+  UpdateType,
+} from "../../packages/common/mod.ts";
 import { MoviesService } from "./movies.service.ts";
 
-@Controller()
+@Controller({ updateTypes: [UpdateType.MESSAGE] })
 export class MoviesController {
   constructor(private moviesService: MoviesService) {}
 
