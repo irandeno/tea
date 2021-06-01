@@ -25,6 +25,10 @@ export class GrammyAdapter extends TelegramAdapter {
     this.adapter.hears(trigger, ctx);
   }
 
+  callbackQuery(trigger: string | RegExp, ctx: any) {
+    this.adapter.callbackQuery(trigger, ctx);
+  }
+
   command(trigger: string, ctx: any) {
     this.adapter.command(trigger, ctx);
   }

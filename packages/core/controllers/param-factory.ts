@@ -20,7 +20,7 @@ export function paramFactory(paramMetadata: ParamMetadata[], context: Context) {
             typeof param.dataType !== "undefined" &&
             param.dataType instanceof Function
           ) {
-            return new param.dataType(context.match.groups[param.data]);
+            return param.dataType(context.match.groups[param.data]);
           }
           return context.match.groups[param.data];
       }

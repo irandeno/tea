@@ -2,6 +2,7 @@ import { Context, Handler, TelegramAdapter } from "../adapters/mod.ts";
 import { Container } from "../injector/mod.ts";
 import { ParamMetadata, UpdateType } from "../../common/mod.ts";
 import { paramFactory } from "./param-factory.ts";
+import * as constants from "../../common/constants.ts";
 import parse from "./response-parser.ts";
 
 type anyObject = Record<string, any>;
@@ -56,12 +57,12 @@ export class ControllerResolver {
     instance: anyObject,
   ) {
     switch (listenerType) {
-      case "hears":
+      case constants.HEARS_METADATA:
         return this.adapter.hears(
           trigger,
           this.createHandler(method, instance),
         );
-      case "command":
+      case constants.COMMAND_METADATA:
         if (trigger instanceof RegExp) {
           return this.adapter.hears(
             trigger,
@@ -69,6 +70,11 @@ export class ControllerResolver {
           );
         }
         return this.adapter.command(
+          trigger,
+          this.createHandler(method, instance),
+        );
+      case constants.CALLBACK_QUERY_METADATA:
+        return this.adapter.callbackQuery(
           trigger,
           this.createHandler(method, instance),
         );
