@@ -2,13 +2,16 @@ import { TelegramAdapter } from "../adapters/mod.ts";
 import { Container } from "../injector/mod.ts";
 import { UpdateType } from "../../common/mod.ts";
 import { ListenerBuilder } from "./listener-builder.ts";
-
+import { HandlerProxy } from "./handler-proxy.ts";
+import { ExceptionHandler } from "../exceptions/mod.ts";
 export type anyObject = Record<string, any>;
 
 export class ControllerResolver {
   private listenerBuilder: ListenerBuilder;
   constructor(private container: Container, private adapter: TelegramAdapter) {
-    this.listenerBuilder = new ListenerBuilder(this.adapter);
+    const exceptionHandler = new ExceptionHandler(this.adapter);
+    const handlerProxy = new HandlerProxy(exceptionHandler);
+    this.listenerBuilder = new ListenerBuilder(this.adapter, handlerProxy);
   }
 
   public resolve() {

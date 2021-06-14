@@ -1,12 +1,16 @@
 import { Context, Handler, TelegramAdapter } from "../adapters/mod.ts";
-import { ParamMetadata } from "../../common/mod.ts";
+import { ParamMetadata, ParamType } from "../../common/mod.ts";
 import { paramFactory } from "./param-factory.ts";
 import { anyObject } from "./resolver.ts";
+import { HandlerProxy } from "./handler-proxy.ts";
 import parse from "./response-parser.ts";
 import * as constants from "../../common/constants.ts";
 
 export class ListenerBuilder {
-  constructor(private adapter: TelegramAdapter) {}
+  constructor(
+    private adapter: TelegramAdapter,
+    private handlerProxy: HandlerProxy,
+  ) {}
 
   public build(
     listenerType: string | symbol,
@@ -41,16 +45,28 @@ export class ListenerBuilder {
   ): Handler {
     return (context: Context) => {
       const paramsMetadata = Reflect.getMetadata<ParamMetadata[]>(
-        "params",
+        constants.PARAMS_METADATA,
         instance,
         callback.name,
       ) || [];
       const paramArgs = paramFactory(paramsMetadata, context);
-      const response = parse(
-        callback.call(instance, ...paramArgs),
-        this.adapter,
+      const hasContextParam = paramsMetadata.some(
+        (param) => param.type === ParamType.CONTEXT,
+      );
+      if (hasContextParam) {
+        this.handlerProxy.call(callback, instance, paramArgs, context);
+        return;
+      }
+      const handlerResponse = this.handlerProxy.call(
+        callback,
+        instance,
+        paramArgs,
         context,
       );
+      if (typeof handlerResponse === "undefined") {
+        return;
+      }
+      const response = parse(handlerResponse, this.adapter, context);
       if (typeof response === "string") {
         this.adapter.reply(response, context);
       } else if (Array.isArray(response)) {

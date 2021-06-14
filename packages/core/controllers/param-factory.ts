@@ -1,11 +1,10 @@
-import { ParamType } from "../../common/mod.ts";
-import { ParamMetadata } from "../../common/interfaces/mod.ts";
+import { ParamMetadata, ParamType } from "../../common/mod.ts";
 import { Context } from "../adapters/mod.ts";
 
 export function paramFactory(paramMetadata: ParamMetadata[], context: Context) {
   return paramMetadata
     .sort((a, b) => a.index - b.index)
-    .map((param: any) => {
+    .map((param) => {
       switch (param.type) {
         case ParamType.CONTEXT:
           return context;
