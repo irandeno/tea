@@ -1,5 +1,7 @@
 import { Container } from "./container.ts";
 import { InstanceWrapper } from "./module.ts";
+import { Controller } from "../../common/interfaces/controllers/controller.interface.ts";
+import { Injectable } from "../../common/interfaces/injectable.interface.ts";
 
 export class Injector {
   constructor(private container: Container) {}
@@ -8,20 +10,31 @@ export class Injector {
     const modules = this.container.getModules();
     modules.forEach((module) => {
       this.createInstanceOfControllers(module.getControllers());
+      this.createInstanceOfInjectables(module.getInjectables());
     });
   }
 
   private createInstanceOfControllers(
-    controllers: Map<any, InstanceWrapper<any>>,
+    controllers: Map<string, InstanceWrapper<Controller>>,
   ) {
-    controllers.forEach((wrapper, controllerType) => {
-      wrapper.instance = this.createDependenciesInstances(controllerType);
+    controllers.forEach((wrapper) => {
+      wrapper.instance = this.createDependenciesInstances(wrapper.metatype);
+    });
+  }
+
+  private createInstanceOfInjectables(
+    injectables: Map<string, InstanceWrapper<Injectable>>,
+  ) {
+    injectables.forEach((wrapper) => {
+      wrapper.instance = this.createDependenciesInstances(wrapper.metatype);
     });
   }
 
   private createDependenciesInstances(type: any) {
     const params = Reflect.getMetadata<any>("design:paramtypes", type) || [];
-    const paramInstances = params.map((param: any) => new param());
+    const paramInstances = params.map((param: any) => {
+      return new param();
+    });
     return new type(...paramInstances);
   }
 }

@@ -1,5 +1,5 @@
 import { UpdateType } from "../../enums/mod.ts";
-
+import { UPDATE_TYPES } from "../../constants.ts";
 export interface ControllerMetadata {
-  updateTypes?: UpdateType[];
+  [UPDATE_TYPES]?: UpdateType[];
 }

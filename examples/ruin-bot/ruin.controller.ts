@@ -1,16 +1,10 @@
-import { Hears, Param } from "../../packages/common/mod.ts";
+import { ExceptionHandlers, Hears, Param } from "../../packages/common/mod.ts";
+import { RuinedWord, RuinExceptionHandler } from "./exceptions/mod.ts";
 
-class RuinedWord extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-const ruinWord = (word: string) => word.split("").reverse().join("");
-
+@ExceptionHandlers(RuinExceptionHandler)
 export class RuinController {
   @Hears("{word:string}")
-  ping(@Param("word") word: string) {
-    throw new RuinedWord(ruinWord(word));
+  ruin(@Param("word") word: string) {
+    throw new RuinedWord(word);
   }
 }

@@ -1,37 +1,54 @@
 import { Context, Handler, TelegramAdapter } from "../adapters/mod.ts";
 import { ParamMetadata, ParamType } from "../../common/mod.ts";
 import { paramFactory } from "./param-factory.ts";
-import { anyObject } from "./resolver.ts";
-import { HandlerProxy } from "./handler-proxy.ts";
+import { ListenerProxy } from "./listener-proxy.ts";
+import { ExceptionHandlerContextCreator } from "../exceptions/mod.ts";
+import { Type } from "../../common/interfaces/mod.ts";
+import { Controller } from "../../common/interfaces/controllers/controller.interface.ts";
+
 import parse from "./response-parser.ts";
 import * as constants from "../../common/constants.ts";
 
 export class ListenerBuilder {
   constructor(
     private adapter: TelegramAdapter,
-    private handlerProxy: HandlerProxy,
+    private listenerProxy: ListenerProxy,
+    private exceptionHandlerContextCreator: ExceptionHandlerContextCreator,
   ) {}
 
   public build(
     listenerType: string | symbol,
     trigger: string | RegExp,
-    method: () => any,
-    instance: anyObject,
+    controllerInstance: Controller,
+    controllerType: Type<Controller>,
+    callback: (...args: any) => any,
   ) {
     switch (listenerType) {
       case constants.HEARS_METADATA:
-        this.adapter.hears(trigger, this.createHandler(method, instance));
+        this.adapter.hears(
+          trigger,
+          this.createListener(controllerInstance, controllerType, callback),
+        );
+        break;
       case constants.COMMAND_METADATA:
         if (trigger instanceof RegExp) {
-          this.adapter.hears(trigger, this.createHandler(method, instance));
+          this.adapter.hears(
+            trigger,
+            this.createListener(controllerInstance, controllerType, callback),
+          );
           return;
         }
-        this.adapter.command(trigger, this.createHandler(method, instance));
+        this.adapter.command(
+          trigger,
+          this.createListener(controllerInstance, controllerType, callback),
+        );
+        break;
       case constants.CALLBACK_QUERY_METADATA:
         this.adapter.callbackQuery(
           trigger,
-          this.createHandler(method, instance),
+          this.createListener(controllerInstance, controllerType, callback),
         );
+        break;
       default:
         throw new Error(
           `unrecognized listener type : "${listenerType.toString()}"`,
@@ -39,34 +56,49 @@ export class ListenerBuilder {
     }
   }
 
-  private createHandler(
+  private createListener(
+    controllerInstance: Controller,
+    controllerType: Type<Controller>,
     callback: (...args: any) => any,
-    instance: anyObject,
   ): Handler {
+    const exceptionHandler = this.exceptionHandlerContextCreator.create(
+      this.adapter,
+      controllerType,
+      callback,
+    );
+
+    const paramsMetadata = Reflect.getMetadata<ParamMetadata[]>(
+      constants.PARAMS_METADATA,
+      controllerInstance,
+      callback.name,
+    ) || [];
+
     return (context: Context) => {
-      const paramsMetadata = Reflect.getMetadata<ParamMetadata[]>(
-        constants.PARAMS_METADATA,
-        instance,
-        callback.name,
-      ) || [];
       const paramArgs = paramFactory(paramsMetadata, context);
       const hasContextParam = paramsMetadata.some(
         (param) => param.type === ParamType.CONTEXT,
       );
       if (hasContextParam) {
-        this.handlerProxy.call(callback, instance, paramArgs, context);
+        this.listenerProxy.call(
+          controllerInstance,
+          callback,
+          paramArgs,
+          context,
+          exceptionHandler,
+        );
         return;
       }
-      const handlerResponse = this.handlerProxy.call(
+      const callbackResponse = this.listenerProxy.call(
+        controllerInstance,
         callback,
-        instance,
         paramArgs,
         context,
+        exceptionHandler,
       );
-      if (typeof handlerResponse === "undefined") {
+      if (typeof callbackResponse === "undefined") {
         return;
       }
-      const response = parse(handlerResponse, this.adapter, context);
+      const response = parse(callbackResponse, this.adapter, context);
       if (typeof response === "string") {
         this.adapter.reply(response, context);
       } else if (Array.isArray(response)) {

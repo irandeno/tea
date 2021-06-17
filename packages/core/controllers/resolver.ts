@@ -1,17 +1,25 @@
 import { TelegramAdapter } from "../adapters/mod.ts";
-import { Container } from "../injector/mod.ts";
+import { Container, InstanceWrapper } from "../injector/mod.ts";
 import { UpdateType } from "../../common/mod.ts";
 import { ListenerBuilder } from "./listener-builder.ts";
-import { HandlerProxy } from "./handler-proxy.ts";
-import { ExceptionHandler } from "../exceptions/mod.ts";
+import { ListenerProxy } from "./listener-proxy.ts";
+import { ExceptionHandlerContextCreator } from "../exceptions/mod.ts";
+import { Type } from "../../common/interfaces/type.interface.ts";
+import { Controller } from "../../common/interfaces/controllers/controller.interface.ts";
+import * as constants from "../../common/constants.ts";
+
 export type anyObject = Record<string, any>;
 
 export class ControllerResolver {
   private listenerBuilder: ListenerBuilder;
+  private listenerProxy = new ListenerProxy();
+  private exceptionHandlerContextCreator = new ExceptionHandlerContextCreator();
   constructor(private container: Container, private adapter: TelegramAdapter) {
-    const exceptionHandler = new ExceptionHandler(this.adapter);
-    const handlerProxy = new HandlerProxy(exceptionHandler);
-    this.listenerBuilder = new ListenerBuilder(this.adapter, handlerProxy);
+    this.listenerBuilder = new ListenerBuilder(
+      this.adapter,
+      this.listenerProxy,
+      this.exceptionHandlerContextCreator,
+    );
   }
 
   public resolve() {
@@ -21,37 +29,63 @@ export class ControllerResolver {
     });
   }
 
-  private setupControllers(controllers: Map<any, any>) {
-    controllers.forEach(({ instance }, controllerType) => {
-      const updateTypes =
-        Reflect.getMetadata<UpdateType[]>("updateTypes", controllerType) || [];
-      this.adapter.addUpdateTypes(updateTypes);
+  private setupControllers(
+    controllers: Map<string, InstanceWrapper<Controller>>,
+  ) {
+    controllers.forEach(
+      ({ instance: controllerInstance, metatype: controllerType }) => {
+        if (controllerInstance === null) return;
+        const updateTypes = this.getUpdateTypes(controllerType);
+        this.adapter.addUpdateTypes(updateTypes);
 
-      const instancePrototype = Object.getPrototypeOf(instance);
-      const methodNames = Object.getOwnPropertyNames(instancePrototype).filter(
-        (method) => method !== "constructor",
-      );
-      this.bindListenersToAdapter(methodNames, instancePrototype, instance);
-    });
+        const controllerPrototype = Object.getPrototypeOf(controllerInstance);
+        const methodNames = Object.getOwnPropertyNames(
+          controllerPrototype,
+        ).filter((method) => method !== "constructor");
+
+        this.bindListenersToAdapter(
+          methodNames,
+          controllerInstance,
+          controllerType,
+          controllerPrototype,
+        );
+      },
+    );
+  }
+
+  private getUpdateTypes(controllerType: Type<Controller>) {
+    return (
+      Reflect.getMetadata<UpdateType[]>(
+        constants.UPDATE_TYPES,
+        controllerType,
+      ) || []
+    );
   }
 
   private bindListenersToAdapter(
     methodNames: string[],
-    instancePrototype: anyObject,
-    instance: anyObject,
+    controllerInstance: Controller,
+    controllerType: Type<Controller>,
+    controllerPrototype: anyObject,
   ) {
     methodNames.forEach((methodName) => {
-      const method = instancePrototype[methodName];
-      const listeners = Reflect.getMetadataKeys(method);
+      const callback = controllerPrototype[methodName];
+      const listeners = Reflect.getMetadataKeys(callback);
       listeners.forEach((listenerType) => {
         const trigger = Reflect.getMetadata<string | RegExp>(
           listenerType,
-          method,
+          callback,
         );
         if (typeof trigger === "undefined") {
           return;
         }
-        this.listenerBuilder.build(listenerType, trigger, method, instance);
+        this.listenerBuilder.build(
+          listenerType,
+          trigger,
+          controllerInstance,
+          controllerType,
+          callback,
+        );
       });
     });
   }

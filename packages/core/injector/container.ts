@@ -1,5 +1,7 @@
 import { Module } from "./module.ts";
 import { Type } from "../../common/interfaces/mod.ts";
+import { Controller } from "../../common/interfaces/controllers/controller.interface.ts";
+import { Injectable } from "../../common/interfaces/injectable.interface.ts";
 
 export class Container {
   private readonly modules = new Map<string, Module>();
@@ -16,9 +18,19 @@ export class Container {
     return this.modules;
   }
 
-  public addController(controller: Type<any>, module: Type<any>) {
-    if (!this.modules.has(module.name)) throw new Error("error");
+  public addController(controller: Type<Controller>, module: Type<any>) {
+    if (!this.modules.has(module.name)) {
+      return;
+    }
     const storedModule = this.modules.get(module.name);
     storedModule?.addController(controller);
+  }
+
+  public addInjectable(injectable: Type<Injectable>, module: Type<any>) {
+    if (!this.modules.has(module.name)) {
+      return;
+    }
+    const storedModule = this.modules.get(module.name);
+    storedModule?.addInjectable(injectable);
   }
 }
