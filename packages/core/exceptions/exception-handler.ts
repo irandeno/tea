@@ -1,8 +1,8 @@
 import { Context, TelegramAdapter } from "../adapters/telegram.abstract.ts";
 import { ExceptionHandler as IExceptionHandler } from "../../common/interfaces/mod.ts";
-import { ExecutionContextHost } from "../execution-context-host.ts";
 import { Type } from "../../common/interfaces/mod.ts";
 import { Controller } from "../../common/interfaces/controllers/controller.interface.ts";
+import { createExecutionContextHost } from "../helpers/mod.ts";
 
 interface ExceptionHandlerProperties {
   instance: IExceptionHandler;
@@ -51,7 +51,7 @@ export class ExceptionHandler {
         })
         : true;
       if (isExceptionRelevant) {
-        const executionContextHost = this.createExecutionContextHost(
+        const executionContextHost = createExecutionContextHost(
           controllerInstance,
           callback,
           context,
@@ -60,17 +60,5 @@ export class ExceptionHandler {
       }
     }
     return true;
-  }
-
-  createExecutionContextHost(
-    controllerInstance: Controller,
-    callback: (...args: any) => any,
-    context: Context,
-  ) {
-    return new ExecutionContextHost(
-      controllerInstance.constructor,
-      callback,
-      context,
-    );
   }
 }

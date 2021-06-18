@@ -9,7 +9,7 @@ export abstract class ContextCreator {
   createContext(
     controller: Type<Controller>,
     callback: (...args: any[]) => any,
-    metadataKey: string,
+    metadataKey: symbol,
   ) {
     const controllerMetadata = Reflect.getMetadata(metadataKey, controller);
     const callbackMetadata = Reflect.getMetadata(metadataKey, callback);
@@ -17,5 +17,12 @@ export abstract class ContextCreator {
       ...this.createConcreteContext(controllerMetadata, controller),
       ...this.createConcreteContext(callbackMetadata, controller),
     ];
+  }
+
+  getInstanceByMetatype(metatype: any, controllerType: Type<Controller>) {
+    return (controllerType as any)
+      .getModule()
+      .getInjectables()
+      .get(metatype.name).instance;
   }
 }

@@ -37,13 +37,6 @@ export class ExceptionHandlerContextCreator extends ContextCreator {
     }));
   }
 
-  getInstanceByMetatype(metatype: any, controllerType: Type<Controller>) {
-    return (controllerType as any).getModule().getInjectables().get(
-      metatype.name,
-    )
-      .instance;
-  }
-
   getExceptionTypes(metatype: any) {
     return Reflect.getMetadata(constants.CATCH_METADATA, metatype) || [];
   }

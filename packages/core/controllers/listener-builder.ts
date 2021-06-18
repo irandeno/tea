@@ -8,12 +8,14 @@ import { Controller } from "../../common/interfaces/controllers/controller.inter
 import { Logger } from "../../services/logger.service.ts";
 import { MESSAGES } from "../constants.ts";
 import { parse as parsePattern } from "../../deps.ts";
-
+import { GuardsConsumer, GuardsContextCreator } from "../guards/mod.ts";
 import parse from "./response-parser.ts";
 import * as constants from "../../common/constants.ts";
 
 export class ListenerBuilder {
   private logger = new Logger("Controllers");
+  private guardsContextCreator = new GuardsContextCreator();
+  private guardsConsumer = new GuardsConsumer();
 
   constructor(
     private adapter: TelegramAdapter,
@@ -77,13 +79,21 @@ export class ListenerBuilder {
       callback,
     );
 
-    const paramsMetadata = Reflect.getMetadata<ParamMetadata[]>(
-      constants.PARAMS_METADATA,
+    const guards = this.guardsContextCreator.create(controllerType, callback);
+
+    const paramsMetadata = this.reflectParamsMetadata(
       controllerInstance,
-      callback.name,
-    ) || [];
+      callback,
+    );
 
     return (context: Context) => {
+      const canActivate = this.guardsConsumer.tryActivate(
+        guards,
+        controllerInstance,
+        callback,
+        context,
+      );
+      if (!canActivate) return;
       const paramArgs = paramFactory(paramsMetadata, context);
       const hasContextParam = paramsMetadata.some(
         (param) => param.type === ParamType.CONTEXT,
@@ -116,5 +126,18 @@ export class ListenerBuilder {
         this.adapter.reply(message, context, extra);
       }
     };
+  }
+
+  private reflectParamsMetadata(
+    controllerInstance: Controller,
+    callback: (...args: any) => any,
+  ) {
+    return (
+      Reflect.getMetadata<ParamMetadata[]>(
+        constants.PARAMS_METADATA,
+        controllerInstance,
+        callback.name,
+      ) || []
+    );
   }
 }

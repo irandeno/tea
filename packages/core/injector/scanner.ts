@@ -63,12 +63,13 @@ export class DependenciesScanner {
       module,
       constants.EXCEPTION_HANDLERS_METADATA,
     );
+    this.reflectInjectables(controller, module, constants.GUARDS_METADATA);
   }
 
   private reflectInjectables(
     controller: Type<Controller>,
     module: Type<any>,
-    metadataKey: string,
+    metadataKey: symbol,
   ) {
     const injectables =
       Reflect.getMetadata<Type<Injectable>[]>(metadataKey, controller) || [];
