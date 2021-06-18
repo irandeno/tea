@@ -70,18 +70,15 @@ export class ControllerResolver {
   ) {
     methodNames.forEach((methodName) => {
       const callback = controllerPrototype[methodName];
-      const listeners = Reflect.getMetadataKeys(callback);
+      const listeners = Reflect.getMetadataKeys(callback) as symbol[];
       listeners.forEach((listenerType) => {
-        const trigger = Reflect.getMetadata<string | RegExp>(
-          listenerType,
-          callback,
-        );
-        if (typeof trigger === "undefined") {
+        const pattern = Reflect.getMetadata<string>(listenerType, callback);
+        if (typeof pattern === "undefined") {
           return;
         }
         this.listenerBuilder.build(
           listenerType,
-          trigger,
+          pattern,
           controllerInstance,
           controllerType,
           callback,

@@ -1,5 +1,5 @@
 import { COMMAND_METADATA } from "../../../constants.ts";
-import { parse } from "../../../../deps.ts";
+
 export function Command(pattern: string): MethodDecorator {
   return (
     target: object,
@@ -7,8 +7,7 @@ export function Command(pattern: string): MethodDecorator {
     descriptor: PropertyDescriptor,
   ) => {
     pattern = validatePattern(pattern);
-    const trigger = parse(pattern);
-    Reflect.defineMetadata(COMMAND_METADATA, trigger, descriptor.value);
+    Reflect.defineMetadata(COMMAND_METADATA, pattern, descriptor.value);
   };
 }
 

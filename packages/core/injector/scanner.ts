@@ -3,7 +3,11 @@ import { Type } from "../../common/mod.ts";
 import { Controller } from "../../common/interfaces/controllers/controller.interface.ts";
 import { Injectable } from "../../common/interfaces/injectable.interface.ts";
 import * as constants from "../../common/constants.ts";
+import { Logger } from "../../services/logger.service.ts";
+import { MESSAGES } from "../constants.ts";
+
 export class DependenciesScanner {
+  private logger = new Logger("Scanner");
   constructor(private container: Container) {}
 
   public scan(module: Type<any>) {
@@ -13,6 +17,7 @@ export class DependenciesScanner {
 
   private scanModule(module: Type<any>) {
     this.storeModule(module);
+    this.logger.log(MESSAGES.OBJECT_SCANNED`${module.name}`);
     const importedModules =
       Reflect.getMetadata<Type<any>[]>("imports", module) || [];
     importedModules.forEach((importedModule) => {
@@ -25,10 +30,12 @@ export class DependenciesScanner {
   }
 
   private storeControllers(controller: Type<Controller>, module: Type<any>) {
+    this.logger.log(MESSAGES.OBJECT_SCANNED`${controller.name}`);
     this.container.addController(controller, module);
   }
 
   private storeInjectables(injectable: Type<Injectable>, module: Type<any>) {
+    this.logger.log(MESSAGES.OBJECT_SCANNED`${injectable.name}`);
     this.container.addInjectable(injectable, module);
   }
 

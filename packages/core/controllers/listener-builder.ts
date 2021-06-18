@@ -5,11 +5,16 @@ import { ListenerProxy } from "./listener-proxy.ts";
 import { ExceptionHandlerContextCreator } from "../exceptions/mod.ts";
 import { Type } from "../../common/interfaces/mod.ts";
 import { Controller } from "../../common/interfaces/controllers/controller.interface.ts";
+import { Logger } from "../../services/logger.service.ts";
+import { MESSAGES } from "../constants.ts";
+import { parse as parsePattern } from "../../deps.ts";
 
 import parse from "./response-parser.ts";
 import * as constants from "../../common/constants.ts";
 
 export class ListenerBuilder {
+  private logger = new Logger("Controllers");
+
   constructor(
     private adapter: TelegramAdapter,
     private listenerProxy: ListenerProxy,
@@ -17,12 +22,17 @@ export class ListenerBuilder {
   ) {}
 
   public build(
-    listenerType: string | symbol,
-    trigger: string | RegExp,
+    listenerType: symbol,
+    pattern: string,
     controllerInstance: Controller,
     controllerType: Type<Controller>,
     callback: (...args: any) => any,
   ) {
+    const trigger = parsePattern(pattern);
+    this.logger.log(
+      MESSAGES.LISTENER_BINDED
+        `${pattern}${controllerType.name}${listenerType.description}`,
+    );
     switch (listenerType) {
       case constants.HEARS_METADATA:
         this.adapter.hears(
