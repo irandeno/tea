@@ -2,11 +2,12 @@ import {
   Controller,
   Hears,
   Message,
-  MessageDto,
   MessageResponse,
   Param,
   ReplyMessageResponse,
 } from "../../packages/common/mod.ts";
+
+import type { MessageDto } from "../../packages/common/mod.ts";
 import { MathService } from "./math.service.ts";
 
 @Controller()

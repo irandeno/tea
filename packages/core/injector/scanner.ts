@@ -51,28 +51,41 @@ export class DependenciesScanner {
       Reflect.getMetadata<Type<Controller>[]>("controllers", module) || [];
     controllers.forEach((controller) => {
       this.storeControllers(controller, module);
+      this.reflectMethodsMetadata(controller, module);
       this.reflectDynamicMetadata(controller, module);
     });
   }
-  private reflectDynamicMetadata(
+
+  private reflectMethodsMetadata(
     controller: Type<Controller>,
     module: Type<any>,
   ) {
+    Object.getOwnPropertyNames(controller.prototype)
+      .filter((methodName) => methodName !== "constructor")
+      .forEach((methodName) => {
+        this.reflectDynamicMetadata(controller.prototype[methodName], module);
+      });
+  }
+
+  private reflectDynamicMetadata(
+    target: Type<Controller> | Function,
+    module: Type<any>,
+  ) {
     this.reflectInjectables(
-      controller,
+      target,
       module,
       constants.EXCEPTION_HANDLERS_METADATA,
     );
-    this.reflectInjectables(controller, module, constants.GUARDS_METADATA);
+    this.reflectInjectables(target, module, constants.GUARDS_METADATA);
   }
 
   private reflectInjectables(
-    controller: Type<Controller>,
+    target: Type<Controller> | Function,
     module: Type<any>,
     metadataKey: symbol,
   ) {
     const injectables =
-      Reflect.getMetadata<Type<Injectable>[]>(metadataKey, controller) || [];
+      Reflect.getMetadata<Type<Injectable>[]>(metadataKey, target) || [];
     injectables.forEach((injectables) => {
       this.storeInjectables(injectables, module);
     });

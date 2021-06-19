@@ -73,7 +73,7 @@ export class ControllerResolver {
       const listeners = Reflect.getMetadataKeys(callback) as symbol[];
       listeners.forEach((listenerType) => {
         const pattern = Reflect.getMetadata<string>(listenerType, callback);
-        if (typeof pattern === "undefined") {
+        if (typeof pattern === "undefined" || typeof pattern !== "string") {
           return;
         }
         this.listenerBuilder.build(
