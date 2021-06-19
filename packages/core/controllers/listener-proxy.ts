@@ -3,7 +3,7 @@ import { Context } from "../adapters/telegram.abstract.ts";
 import { Controller } from "../../common/interfaces/controllers/controller.interface.ts";
 
 export class ListenerProxy {
-  call(
+  async call(
     controllerInstance: Controller,
     callback: (...args: any) => any,
     paramArgs: any[],
@@ -11,7 +11,7 @@ export class ListenerProxy {
     exceptionHandler: ExceptionHandler,
   ) {
     try {
-      return callback.call(controllerInstance, ...paramArgs);
+      return await callback.call(controllerInstance, ...paramArgs);
     } catch (err) {
       exceptionHandler.handle(err, context, controllerInstance, callback);
     }

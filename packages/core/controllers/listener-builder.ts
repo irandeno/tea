@@ -86,7 +86,7 @@ export class ListenerBuilder {
       callback,
     );
 
-    return (context: Context) => {
+    return async (context: Context) => {
       const canActivate = this.guardsConsumer.tryActivate(
         guards,
         controllerInstance,
@@ -108,7 +108,7 @@ export class ListenerBuilder {
         );
         return;
       }
-      const callbackResponse = this.listenerProxy.call(
+      const callbackResponse = await this.listenerProxy.call(
         controllerInstance,
         callback,
         paramArgs,
