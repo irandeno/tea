@@ -57,6 +57,7 @@ export class ExceptionHandler {
           context,
         );
         handler.instance.handle(executionContextHost, exception);
+        break;
       }
     }
     return true;

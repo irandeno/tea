@@ -20,7 +20,7 @@ export class ExceptionHandlerContextCreator extends ContextCreator {
     if (handlers.length === 0) {
       return exceptionHandler;
     }
-    exceptionHandler.setCustomHandlers(handlers);
+    exceptionHandler.setCustomHandlers(handlers.reverse());
     return exceptionHandler;
   }
 
