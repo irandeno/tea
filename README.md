@@ -11,7 +11,7 @@ injection.
 
 ```typescript
 // main.ts
-import { TeaFactory } from "https://deno.land/x/tea@v0.3.0/packages/core/mod.ts";
+import { TeaFactory } from "https://deno.land/x/tea@v0.3.1/packages/core/mod.ts";
 import { BotModule } from "./bot.module.ts";
 
 function bootstrap() {
@@ -24,7 +24,7 @@ bootstrap();
 
 ```typescript
 // bot.module.ts
-import { Module } from "https://deno.land/x/tea@v0.3.0/packages/common/mod.ts";
+import { Module } from "https://deno.land/x/tea@v0.3.1/packages/common/mod.ts";
 import { GreetController } from "./greet.controller.ts";
 
 @Module({
