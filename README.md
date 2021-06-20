@@ -55,3 +55,14 @@ export class GreetController {
   }
 }
 ```
+
+## Execution
+
+```shell
+deno run --allow-net=api.telegram.org --allow-env=DEBUG,DENO_ENV -c tsconfig.json --no-check main.ts
+```
+
+> p.s1: `--no-check` is temporary until the adapter typing problem is resolved.
+
+> p.s2: `tsconfig.json` file content can be copied from
+> [this file](https://github.com/irandeno/tea/blob/main/tsconfig.json).
