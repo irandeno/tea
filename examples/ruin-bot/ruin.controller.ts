@@ -1,5 +1,6 @@
 import {
   Command,
+  Controller,
   ExceptionHandlers,
   Hears,
   Param,
@@ -10,6 +11,7 @@ import {
   RuinExceptionHandler,
 } from "./exceptions/mod.ts";
 
+@Controller()
 @ExceptionHandlers(GeneralExceptionHandler)
 export class RuinController {
   @Command("error")
