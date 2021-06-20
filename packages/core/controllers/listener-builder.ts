@@ -30,7 +30,10 @@ export class ListenerBuilder {
     controllerType: Type<Controller>,
     callback: (...args: any) => any,
   ) {
-    const trigger = parsePattern(pattern);
+    const trigger = listenerType === constants.START_METADATA
+      ? pattern === "start" ? "start" : parsePattern("/start " + pattern)
+      : parsePattern(pattern);
+
     this.logger.log(
       MESSAGES.LISTENER_BINDED
         `${pattern}${controllerType.name}${listenerType.description}`,
@@ -57,6 +60,12 @@ export class ListenerBuilder {
         break;
       case constants.CALLBACK_QUERY_METADATA:
         this.adapter.callbackQuery(
+          trigger,
+          this.createListener(controllerInstance, controllerType, callback),
+        );
+        break;
+      case constants.START_METADATA:
+        this.adapter.start(
           trigger,
           this.createListener(controllerInstance, controllerType, callback),
         );

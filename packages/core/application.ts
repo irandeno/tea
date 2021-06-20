@@ -12,6 +12,6 @@ export class Application {
   }
 
   public start() {
-    this.adapter.start();
+    this.adapter.listen();
   }
 }

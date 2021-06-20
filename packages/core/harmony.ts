@@ -7,13 +7,14 @@ import * as constants from "../common/constants.ts";
 const relationsTable = new Map([
   [constants.HEARS_METADATA, UpdateType.MESSAGE],
   [constants.COMMAND_METADATA, UpdateType.MESSAGE],
+  [constants.START_METADATA, UpdateType.MESSAGE],
   [constants.CALLBACK_QUERY_METADATA, UpdateType.CALLBACK_QUERY],
 ]);
 
 export class Harmony {
   private logger = new Logger("Harmony");
   constructor(private container: Container) {}
-  
+
   public check() {
     const modules = this.container.getModules();
     modules.forEach((module) => {

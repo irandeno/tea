@@ -12,7 +12,8 @@ export abstract class TelegramAdapter {
     trigger: string | RegExp,
     handler: Handler,
   ): void;
-  public abstract start(): void;
+  public abstract start(trigger: string | RegExp, handler: Handler): void;
+  public abstract listen(): void;
   public abstract reply(message: string, context: Context, extra?: any): void;
   public abstract createKeyboard(...keyboard: any): any;
   public abstract addUpdateTypes(updateTypes: UpdateType[]): void;
