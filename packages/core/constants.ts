@@ -17,4 +17,10 @@ export const MESSAGES = {
     `_'${pattern}'_ listener binded to *${controllerName}* ${
       listenerType ? `as a ${listenerType}` : ""
     }.`,
+  HARMONY_NOT_ESTABLISHED: (
+    listenerType: string,
+    updateType: string,
+    controllerName: string,
+  ) =>
+    `*${listenerType}* listener needs *'${updateType}'* update type witch is not provided in ${controllerName} controller._`,
 };

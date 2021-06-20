@@ -5,8 +5,12 @@ import {
   green,
   italic,
   red,
+  white,
+  yellow,
 } from "https://deno.land/std@0.99.0/fmt/colors.ts";
 import { Tokenizer } from "../deps.ts";
+
+export type Level = "log" | "error" | "warn";
 
 export class Logger {
   constructor(private zone: string) {}
@@ -19,19 +23,35 @@ export class Logger {
     this.logByDetails(message, "error");
   }
 
+  warn(message: string) {
+    this.logByDetails(message, "warn");
+  }
+
   private write(message: string) {
     Deno.stdout.write(new TextEncoder().encode(message));
   }
 
-  private logByDetails(message: string, level: "log" | "error") {
+  private logByDetails(message: string, level: Level) {
     if (Deno.env.get("DENO_ENV") === "production") return;
     this.write(blue(`[ Tea - ${new Date().toLocaleDateString("en")} ] `));
     this.write(gray(bold(`[${this.zone}]`)) + " ");
-    const color = level === "log" ? green : red;
+    const color = this.getColorByLevel(level);
     this.write(color(this.highlight(message)));
     this.write("\r\n");
   }
 
+  private getColorByLevel(level: Level) {
+    switch (level) {
+      case "log":
+        return green;
+      case "warn":
+        return yellow;
+      case "error":
+        return red;
+      default:
+        return white;
+    }
+  }
   private highlight(message: string): string {
     const stringRegex = /(?:\\["\\]|[^\n"\\])/;
     const tokenizer = new Tokenizer({
