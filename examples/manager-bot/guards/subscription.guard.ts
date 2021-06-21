@@ -1,11 +1,12 @@
 import { CanActivate, ExecutionContext } from "../../../packages/common/mod.ts";
 
-const subscriptions = [123, 456, 789];
+const allowedStatuses = ["creator", "administrator", "member"];
 
 export class SubscriptionGuard implements CanActivate {
-  canActivate(executionContext: ExecutionContext) {
+  async canActivate(executionContext: ExecutionContext) {
     const context = executionContext.getContext();
     const senderId = context.from.id;
-    return subscriptions.includes(senderId);
+    const member = await context.api.getChatMember("@channel", senderId);
+    return allowedStatuses.includes(member.status);
   }
 }

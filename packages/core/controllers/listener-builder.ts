@@ -96,7 +96,7 @@ export class ListenerBuilder {
     );
 
     return async (context: Context) => {
-      const canActivate = this.guardsConsumer.tryActivate(
+      const canActivate = await this.guardsConsumer.tryActivate(
         guards,
         controllerInstance,
         callback,
