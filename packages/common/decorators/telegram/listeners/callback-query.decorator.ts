@@ -1,6 +1,6 @@
 import { CALLBACK_QUERY_METADATA } from "../../../constants.ts";
 
-export function CallbackQuery(pattern: string): MethodDecorator {
+export function CallbackQuery(pattern: string | RegExp): MethodDecorator {
   return (
     target: object,
     key: string | symbol,

@@ -1,6 +1,6 @@
 import { COMMAND_METADATA } from "../../../constants.ts";
 
-export function Command(pattern: string): MethodDecorator {
+export function Command(pattern: string | RegExp): MethodDecorator {
   return (
     target: object,
     key: string | symbol,
@@ -11,5 +11,7 @@ export function Command(pattern: string): MethodDecorator {
   };
 }
 
-const validatePattern = (pattern: string) =>
-  pattern.length ? (pattern[0] === "/" ? pattern.slice(1) : pattern) : pattern;
+const validatePattern = (pattern: string | RegExp) =>
+  pattern.toString().length
+    ? pattern.toString()[0] === "/" ? pattern.toString().slice(1) : pattern
+    : pattern;

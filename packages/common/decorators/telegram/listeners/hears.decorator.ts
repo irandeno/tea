@@ -1,6 +1,6 @@
 import { HEARS_METADATA } from "../../../constants.ts";
 
-export function Hears(pattern: string): MethodDecorator {
+export function Hears(pattern: string | RegExp): MethodDecorator {
   return (
     target: object,
     key: string | symbol,

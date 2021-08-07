@@ -22,21 +22,23 @@ export class ListenerBuilder {
     private listenerProxy: ListenerProxy,
     private exceptionHandlerContextCreator: ExceptionHandlerContextCreator,
   ) {}
-
+  
   public build(
     listenerType: symbol,
-    pattern: string,
+    pattern: string | RegExp,
     controllerInstance: Controller,
     controllerType: Type<Controller>,
     callback: (...args: any) => any,
   ) {
     const trigger = listenerType === constants.START_METADATA
       ? pattern === "start" ? "start" : parsePattern("/start " + pattern)
+      : pattern instanceof RegExp
+      ? pattern
       : parsePattern(pattern);
 
     this.logger.log(
       MESSAGES.LISTENER_BINDED
-        `${pattern}${controllerType.name}${listenerType.description}`,
+        `${pattern.toString()}${controllerType.name}${listenerType.description}`,
     );
     switch (listenerType) {
       case constants.HEARS_METADATA:
@@ -128,12 +130,7 @@ export class ListenerBuilder {
         return;
       }
       const response = parse(callbackResponse, this.adapter, context);
-      if (typeof response === "string") {
-        this.adapter.reply(response, context);
-      } else if (Array.isArray(response)) {
-        const [message, extra] = response;
-        this.adapter.reply(message, context, extra);
-      }
+      this.adapter.reply(response, context);
     };
   }
 
