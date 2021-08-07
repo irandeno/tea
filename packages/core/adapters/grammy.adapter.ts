@@ -1,6 +1,10 @@
 import * as Grammy from "https://deno.land/x/grammy@v1.1.4/mod.ts";
 import { TelegramAdapter } from "./mod.ts";
 import { UpdateType } from "../../common/mod.ts";
+import {
+  ParsedResponse,
+  ResponseType,
+} from "../controllers/response-parser.ts";
 
 type OrdinaryKeyboardType = string[];
 
@@ -51,8 +55,12 @@ export class GrammyAdapter extends TelegramAdapter {
     });
   }
 
-  reply(message: string, ctx: Grammy.Context, extra?: any) {
-    ctx.reply(message, extra);
+  reply(response: ParsedResponse, ctx: Grammy.Context) {
+    if (response.type === ResponseType.Message) {
+      ctx.reply(response.caption!, response);
+    } else if (response.type === ResponseType.Photo) {
+      ctx.replyWithPhoto(response.photo!, response);
+    }
   }
 
   createKeyboard(keyboard: unknown[]) {

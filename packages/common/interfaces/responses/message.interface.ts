@@ -1,6 +1,5 @@
-import { InlineKeyboard, OrdinaryKeyboard } from "./keyboard.interface.ts";
+import { Keyboard } from "./keyboard.interface.ts";
 
-export interface MessageResponse {
+export interface MessageResponse extends Keyboard {
   message: string;
-  keyboard?: InlineKeyboard | OrdinaryKeyboard;
 }

@@ -15,3 +15,7 @@ export type InlineKeyboard =
   | Array<DataButtonsKeyboard>;
 
 export type OrdinaryKeyboard = Array<BaseKeyboard>;
+
+export interface Keyboard {
+  keyboard?: InlineKeyboard | OrdinaryKeyboard;
+}
