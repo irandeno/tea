@@ -3,12 +3,14 @@ import { Context, TelegramAdapter } from "../adapters/telegram.abstract.ts";
 export enum ResponseType {
   Message,
   Photo,
+  Video,
 }
 
 export interface ParsedResponse {
   type?: ResponseType;
   caption?: string;
   photo?: string;
+  video?: string;
   reply_markup?: any;
   reply_to_message_id?: number;
 }
@@ -30,6 +32,11 @@ export default function parse(
     if (response.photo !== undefined) {
       parsedResponse.type = ResponseType.Photo;
       parsedResponse.photo = response.photo;
+      parsedResponse.caption = response.caption;
+    }
+    if (response.video !== undefined) {
+      parsedResponse.type = ResponseType.Video;
+      parsedResponse.video = response.video;
       parsedResponse.caption = response.caption;
     } else if (
       response.message === "" ||

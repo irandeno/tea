@@ -22,7 +22,7 @@ export class ListenerBuilder {
     private listenerProxy: ListenerProxy,
     private exceptionHandlerContextCreator: ExceptionHandlerContextCreator,
   ) {}
-  
+
   public build(
     listenerType: symbol,
     pattern: string | RegExp,

@@ -60,6 +60,8 @@ export class GrammyAdapter extends TelegramAdapter {
       ctx.reply(response.caption!, response);
     } else if (response.type === ResponseType.Photo) {
       ctx.replyWithPhoto(response.photo!, response);
+    } else if (response.type === ResponseType.Video) {
+      ctx.replyWithVideo(response.video!, response);
     }
   }
 
