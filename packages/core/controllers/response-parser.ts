@@ -33,8 +33,7 @@ export default function parse(
       parsedResponse.type = ResponseType.Photo;
       parsedResponse.photo = response.photo;
       parsedResponse.caption = response.caption;
-    }
-    if (response.video !== undefined) {
+    } else if (response.video !== undefined) {
       parsedResponse.type = ResponseType.Video;
       parsedResponse.video = response.video;
       parsedResponse.caption = response.caption;
